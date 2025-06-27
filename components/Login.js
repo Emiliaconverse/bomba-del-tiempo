@@ -1,10 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import Objetivos from './Objetivos'
 
 export default function Login() {
   const [usuario, setUsuario] = useState('')
   const [logueado, setLogueado] = useState(false)
+
+  useEffect(() => {
+    const jugadorGuardado = typeof window !== 'undefined' ? localStorage.getItem('jugador') : null
+    if (jugadorGuardado) {
+      setLogueado(true)
+    }
+  }, [])
 
   const handleLogin = async () => {
     const { data, error } = await supabase
@@ -21,21 +28,9 @@ export default function Login() {
     }
   }
 
-  import { useEffect } from 'react'
-
-// ...
-
-useEffect(() => {
-  const jugadorGuardado = typeof window !== 'undefined' ? localStorage.getItem('jugador') : null
-  if (jugadorGuardado) {
-    setLogueado(true)
+  if (logueado) {
+    return <Objetivos />
   }
-}, [])
-
-if (logueado) {
-  return <Objetivos />
-}
-
 
   return (
     <div>
@@ -50,3 +45,4 @@ if (logueado) {
     </div>
   )
 }
+
