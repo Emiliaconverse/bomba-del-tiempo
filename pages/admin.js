@@ -1,4 +1,4 @@
-import NavBar from './NavBar'
+import NavBar from '../components/NavBar'
 import { useState } from 'react'
 
 export default function Admin() {
@@ -10,9 +10,9 @@ export default function Admin() {
     // En versión real se procesará y actualizará Supabase
   }
 
-
   return (
     <div>
+      <NavBar />
       <h2>Panel de administración</h2>
       <p>Subí el archivo de ventas del día (.xlsx o .csv)</p>
       <input type="file" onChange={(e) => setFile(e.target.files[0])} />
