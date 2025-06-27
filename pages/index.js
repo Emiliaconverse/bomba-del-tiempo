@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import Objetivos from './Objetivos'
+import Objetivos from '../components/Objetivos'
+
 
 export default function Login() {
   const [usuario, setUsuario] = useState('')
