@@ -21,9 +21,21 @@ export default function Login() {
     }
   }
 
-  if (logueado || localStorage.getItem('jugador')) {
-    return <Objetivos />
+  import { useEffect } from 'react'
+
+// ...
+
+useEffect(() => {
+  const jugadorGuardado = typeof window !== 'undefined' ? localStorage.getItem('jugador') : null
+  if (jugadorGuardado) {
+    setLogueado(true)
   }
+}, [])
+
+if (logueado) {
+  return <Objetivos />
+}
+
 
   return (
     <div>
