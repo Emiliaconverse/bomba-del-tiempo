@@ -55,6 +55,7 @@ export default function Tablero({ jugadorId, objetivoId, chances, onTerminarPart
       onTerminarPartida()
     }
   }
+import NavBar from './NavBar'
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 60px)', gap: '10px' }}>
