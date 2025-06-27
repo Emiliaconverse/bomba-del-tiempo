@@ -28,6 +28,7 @@ export default function Objetivos() {
   if (jugando) {
     return <Tablero objetivo={jugando} />
   }
+import NavBar from './NavBar'
 
   return (
     <div>
