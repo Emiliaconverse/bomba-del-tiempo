@@ -1,0 +1,54 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Estilo general del body */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f2f4f8;
+  color: #222;
+  padding: 20px;
+}
+
+/* Inputs y botones */
+input, button {
+  font-size: 16px;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 6px;
+}
+
+input {
+  width: 100%;
+  max-width: 300px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background-color: #ff5555;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #e53935;
+}
+
+/* Encabezados */
+h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+/* Contenedor centrado */
+div {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
