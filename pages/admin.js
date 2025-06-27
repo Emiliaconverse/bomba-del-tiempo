@@ -1,4 +1,4 @@
-<NavBar />
+import NavBar from './NavBar'
 import { useState } from 'react'
 
 export default function Admin() {
@@ -9,7 +9,7 @@ export default function Admin() {
     alert('Simulación: archivo procesado correctamente')
     // En versión real se procesará y actualizará Supabase
   }
-import NavBar from './NavBar'
+
 
   return (
     <div>
