@@ -1,46 +1,40 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import Objetivos from './Objetivos'
 
 export default function Login() {
-  const [emailOrUser, setEmailOrUser] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [usuario, setUsuario] = useState('')
+  const [logueado, setLogueado] = useState(false)
 
   const handleLogin = async () => {
-    setLoading(true)
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .eq('nombre', usuario)
+      .single()
 
-    const isEmail = emailOrUser.includes('@')
-    if (isEmail) {
-      await supabase.auth.signInWithOtp({ email: emailOrUser })
-      alert('Revisá tu correo para iniciar sesión.')
+    if (data) {
+      localStorage.setItem('jugador', JSON.stringify(data))
+      setLogueado(true)
     } else {
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('email')
-        .eq('nombre', emailOrUser)
-        .single()
-      if (data?.email) {
-        await supabase.auth.signInWithOtp({ email: data.email })
-        alert('Revisá tu correo para iniciar sesión.')
-      } else {
-        alert('Usuario no encontrado.')
-      }
+      alert('Usuario no encontrado.')
     }
+  }
 
-    setLoading(false)
+  if (logueado || localStorage.getItem('jugador')) {
+    return <Objetivos />
   }
 
   return (
     <div>
-      <h1>Login</h1>
+      <h2>Ingresá tu nombre de jugador</h2>
       <input
         type="text"
-        placeholder="Email o usuario"
-        value={emailOrUser}
-        onChange={(e) => setEmailOrUser(e.target.value)}
+        value={usuario}
+        onChange={(e) => setUsuario(e.target.value)}
+        placeholder="Ej: v11"
       />
-      <button onClick={handleLogin} disabled={loading}>
-        {loading ? 'Enviando...' : 'Iniciar sesión'}
-      </button>
+      <button onClick={handleLogin}>Ingresar</button>
     </div>
   )
 }
