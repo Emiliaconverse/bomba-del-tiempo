@@ -1,7 +1,7 @@
-<NavBar />
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import Tablero from './Tablero'
+import NavBar from './NavBar' // ⬅️ El import tiene que ir arriba
 
 export default function Objetivos() {
   const [objetivos, setObjetivos] = useState([])
@@ -29,10 +29,10 @@ export default function Objetivos() {
   if (jugando) {
     return <Tablero objetivo={jugando} />
   }
-import NavBar from './NavBar'
 
   return (
     <div>
+      <NavBar /> {/* ⬅️ Ahora sí va acá, dentro del return */}
       <h3>Elegí un objetivo para jugar</h3>
       <ul>
         {objetivos.map((obj) => (
