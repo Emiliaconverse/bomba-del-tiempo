@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import Objetivos from '../components/Objetivos'
+import Objetivos from './Objetivos'
+
 
 
 export default function Login() {
