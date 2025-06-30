@@ -1,67 +1,98 @@
+import NavBar from './NavBar'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 const generarTablero = () => {
-  const posiciones = Array.from({ length: 25 }, (_, i) => i)
-  const bombas = []
-  while (bombas.length < 3) {
-    const rand = posiciones.splice(Math.floor(Math.random() * posiciones.length), 1)[0]
-    bombas.push(rand)
+  const totalCasilleros = 25
+  const bombas = new Set()
+  while (bombas.size < 3) {
+    bombas.add(Math.floor(Math.random() * totalCasilleros))
   }
-  return bombas
+  return Array.from({ length: totalCasilleros }, (_, i) => ({
+    tieneBomba: bombas.has(i),
+    abierto: false,
+  }))
 }
 
-export default function Tablero({ objetivo }) {
-  const [bombas, setBombas] = useState([])
-  const [abiertos, setAbiertos] = useState([])
-  const [chancesRestantes, setChancesRestantes] = useState(objetivo.chances)
+export default function Tablero({ jugadorId, objetivoId, chances, onTerminarPartida }) {
+  const [tablero, setTablero] = useState([])
+  const [chancesRestantes, setChancesRestantes] = useState(chances)
+  const [bombasEncontradas, setBombasEncontradas] = useState(0)
+  const [finalizado, setFinalizado] = useState(false)
 
   useEffect(() => {
-    setBombas(generarTablero())
+    setTablero(generarTablero())
   }, [])
 
-  const handleClick = async (index) => {
-    if (abiertos.includes(index) || chancesRestantes <= 0) return
+  const manejarClick = async (index) => {
+    if (tablero[index].abierto || finalizado) return
 
-    const jugador = JSON.parse(localStorage.getItem('jugador'))
-    const esBomba = bombas.includes(index)
-    setAbiertos([...abiertos, index])
-    setChancesRestantes(chancesRestantes - 1)
+    const nuevoTablero = [...tablero]
+    nuevoTablero[index].abierto = true
+    setTablero(nuevoTablero)
 
-    if (esBomba) {
+    const nuevasChances = chancesRestantes - 1
+    setChancesRestantes(nuevasChances)
+
+    if (nuevoTablero[index].tieneBomba) {
       alert('¡Encontraste la bomba! Estás un paso más cerca del premio mayor')
+      setBombasEncontradas((prev) => prev + 1)
 
       await supabase.from('bombas_encontradas').insert({
-        jugador_id: jugador.id,
+        jugador_id: jugadorId,
         fecha: new Date().toISOString(),
-        objetivo_id: objetivo.id,
+        objetivo_id: objetivoId
       })
     }
 
-    if (chancesRestantes - 1 === 0) {
+    if (nuevasChances === 0) {
+      setFinalizado(true)
+
+      await supabase.from('jugadas').insert({
+        jugador_id: jugadorId,
+        objetivo_id: objetivoId,
+        fecha_jugada: new Date().toISOString(),
+        bombas_encontradas: bombasEncontradas,
+        casilleros_abiertos: chances
+      })
+
+      // Marcar objetivo como usado
       await supabase
         .from('cumplimientos')
         .update({ usado: true })
-        .match({ jugador_id: jugador.id, objetivo_id: objetivo.id })
+        .match({ jugador_id: jugadorId, objetivo_id: objetivoId })
+
+      onTerminarPartida()
     }
   }
 
   return (
-    <div>
-      <h3>Tablero</h3>
-      <p>Chances restantes: {chancesRestantes}</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 60px)', gap: '5px' }}>
-        {Array.from({ length: 25 }, (_, i) => (
+    <>
+      <NavBar />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 60px)', gap: '10px', marginTop: '20px' }}>
+        {tablero.map((casillero, i) => (
           <button
             key={i}
-            style={{ height: '60px', width: '60px', fontSize: '20px' }}
-            onClick={() => handleClick(i)}
-            disabled={abiertos.includes(i)}
+            style={{
+              height: '60px',
+              width: '60px',
+              backgroundColor: casillero.abierto
+                ? casillero.tieneBomba
+                  ? 'red'
+                  : 'lightgray'
+                : 'black',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '18px'
+            }}
+            onClick={() => manejarClick(i)}
           >
-            {abiertos.includes(i) ? (bombas.includes(i) ? '💣' : '✔️') : ''}
+            {casillero.abierto ? (casillero.tieneBomba ? '💣' : '') : ''}
           </button>
         ))}
       </div>
-    </div>
+    </>
   )
 }
+
