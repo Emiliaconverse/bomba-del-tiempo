@@ -26,9 +26,16 @@ export default function Objetivos() {
     fetchObjetivos()
   }, [])
 
-  if (jugando) {
-    return <Tablero objetivo={jugando} />
-  }
+ const jugador = JSON.parse(localStorage.getItem('jugador'))
+
+return (
+  <Tablero
+    jugadorId={jugador.id}
+    objetivoId={jugando.id}
+    chances={jugando.chances}
+    onTerminarPartida={() => setJugando(null)}
+  />
+)
 
   return (
     <div>
