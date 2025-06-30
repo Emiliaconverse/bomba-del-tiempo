@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import Tablero from './Tablero'
-import NavBar from './NavBar' // ⬅️ El import tiene que ir arriba
+import Tablero from '../components/Tablero'
+import NavBar from '../components/NavBar' // ⬅️ El import tiene que ir arriba
 
 export default function Objetivos() {
   const [objetivos, setObjetivos] = useState([])
