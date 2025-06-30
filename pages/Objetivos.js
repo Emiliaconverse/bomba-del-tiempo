@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import Tablero from '../components/Tablero'
-import NavBar from '../components/NavBar' // ⬅️ El import tiene que ir arriba
+import Tablero from './Tablero'
+import NavBar from './NavBar'
 
 export default function Objetivos() {
   const [objetivos, setObjetivos] = useState([])
   const [jugando, setJugando] = useState(null)
 
   useEffect(() => {
+    // Evitar ejecución en servidor (Vercel)
+    if (typeof window === 'undefined') return
+
     const jugador = JSON.parse(localStorage.getItem('jugador'))
+    if (!jugador) return
+
     const fetchObjetivos = async () => {
       const { data: cumplidos } = await supabase
         .from('cumplimientos')
@@ -26,20 +31,23 @@ export default function Objetivos() {
     fetchObjetivos()
   }, [])
 
- const jugador = JSON.parse(localStorage.getItem('jugador'))
-
-return (
-  <Tablero
-    jugadorId={jugador.id}
-    objetivoId={jugando.id}
-    chances={jugando.chances}
-    onTerminarPartida={() => setJugando(null)}
-  />
-)
+  if (jugando) {
+    return (
+      <div>
+        <NavBar />
+        <Tablero
+          jugadorId={JSON.parse(localStorage.getItem('jugador'))?.id}
+          objetivoId={jugando.id}
+          chances={jugando.chances}
+          onTerminarPartida={() => setJugando(null)}
+        />
+      </div>
+    )
+  }
 
   return (
     <div>
-      <NavBar /> {/* ⬅️ Ahora sí va acá, dentro del return */}
+      <NavBar />
       <h3>Elegí un objetivo para jugar</h3>
       <ul>
         {objetivos.map((obj) => (
@@ -52,3 +60,4 @@ return (
     </div>
   )
 }
+
