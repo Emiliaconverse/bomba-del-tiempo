@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import Tablero from './Tablero'
-import NavBar from './NavBar'
+import Tablero from '../components/Tablero'
+import NavBar from '../components/NavBar'
 
 export default function Objetivos() {
   const [objetivos, setObjetivos] = useState([])
   const [jugando, setJugando] = useState(null)
 
   useEffect(() => {
-    // Evitar ejecución en servidor (Vercel)
     if (typeof window === 'undefined') return
-
     const jugador = JSON.parse(localStorage.getItem('jugador'))
     if (!jugador) return
 
@@ -60,4 +58,3 @@ export default function Objetivos() {
     </div>
   )
 }
-
