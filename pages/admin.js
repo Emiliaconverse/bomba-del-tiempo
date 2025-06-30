@@ -1,61 +1,66 @@
 import NavBar from '../components/NavBar'
 import { useState } from 'react'
+import { supabase } from '../lib/supabaseClient'
+import Papa from 'papaparse'
 
 export default function Admin() {
   const [file, setFile] = useState(null)
+  const [mensaje, setMensaje] = useState('')
 
-  const handleUpload = () => {
-  if (!file) return alert('Subí un archivo primero')
+  const handleUpload = async () => {
+    if (!file) return alert('Subí un archivo primero')
 
-  const reader = new FileReader()
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        const ventas = results.data
 
-  reader.onload = async (e) => {
-    const text = e.target.result
-    const lines = text.trim().split('\n')
-    const headers = lines[0].split(',').map(h => h.trim())
+        // Suponemos que las columnas son: modelo, familia, vendedor, fecha_venta
+        const insertVentas = ventas.map((v) => ({
+          modelo: v.modelo,
+          familia: v.familia,
+          vendedor: v.vendedor,
+          fecha_venta: new Date(v.fecha_venta),
+        }))
 
-    for (let i = 1; i < lines.length; i++) {
-      const row = lines[i].split(',').map(val => val.trim())
-      const venta = Object.fromEntries(headers.map((h, j) => [h, row[j]]))
+        const { error } = await supabase.from('ventas').insert(insertVentas)
 
-      const { jugador, fecha, categoria, cantidad, monto } = venta
+        if (error) {
+          console.error(error)
+          setMensaje('❌ Error al subir las ventas')
+        } else {
+          setMensaje('✅ Ventas cargadas correctamente')
 
-      // Buscamos el jugador por nombre
-      const { data: jugadorData } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq('nombre', jugador)
-        .single()
+          // Ahora procesamos objetivos por vendedor
+          const ventasPorVendedor = {}
+          insertVentas.forEach((venta) => {
+            const key = venta.vendedor
+            ventasPorVendedor[key] = (ventasPorVendedor[key] || 0) + 1
+          })
 
-      if (!jugadorData) {
-        console.warn(`Jugador ${jugador} no encontrado. Salteado.`)
-        continue
-      }
+          const nuevosObjetivos = Object.entries(ventasPorVendedor).map(([vendedor, cantidad]) => ({
+            nombre: `Objetivo de ${vendedor}`,
+            tipo: 'ventas',
+            chances: Math.floor(cantidad / 5), // Ejemplo: 1 chance cada 5 ventas
+          })).filter(obj => obj.chances > 0)
 
-      await supabase.from('ventas').insert({
-        jugador_id: jugadorData.id,
-        fecha,
-        categoria,
-        cantidad: Number(cantidad),
-        monto: Number(monto)
-      })
-    }
-
-    alert('Ventas cargadas con éxito 🎉')
-    setFile(null)
+          await supabase.from('objetivos').insert(nuevosObjetivos)
+          setMensaje((prev) => prev + ' y objetivos generados.')
+        }
+      },
+    })
   }
 
-  reader.readAsText(file)
-}
-
-
   return (
-    <div>
+    <div style={{ padding: '20px' }}>
       <NavBar />
       <h2>Panel de administración</h2>
-      <p>Subí el archivo de ventas del día (.xlsx o .csv)</p>
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+      <p>Subí el archivo de ventas (.csv con encabezados: modelo, familia, vendedor, fecha_venta)</p>
+      <input type="file" accept=".csv" onChange={(e) => setFile(e.target.files[0])} />
       <button onClick={handleUpload}>Procesar archivo</button>
+      {mensaje && <p style={{ marginTop: '10px' }}>{mensaje}</p>}
     </div>
   )
 }
+
